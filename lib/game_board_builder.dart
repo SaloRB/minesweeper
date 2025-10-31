@@ -70,10 +70,17 @@ class GameBoardBuilder {
 
   Coords getRowColumnForCoordinates(Offset position) {
     return Coords(
-      column: (position.dx / squareSize).ceil(),
-      row: (position.dy / squareSize).ceil(),
+      column: (position.dx / squareSize).floor(),
+      row: (position.dy / squareSize).floor(),
     );
   }
+
+  Position getFillSquarePosition(Coords coords) => Position(
+    width: squareSize - 2,
+    height: squareSize - 2,
+    left: coords.column * squareSize + 1,
+    top: coords.row * squareSize + 1,
+  );
 }
 
 class Coords extends Equatable {

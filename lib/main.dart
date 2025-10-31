@@ -90,25 +90,76 @@ class _GameBoardInnerState extends State<_GameBoardInner> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTapUp: (details) {
-        final coords = widget.builder.getRowColumnForCoordinates(
-          details.localPosition,
+    return ListenableBuilder(
+      listenable: engine,
+      builder: (context, _) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapUp: (details) {
+            final coords = widget.builder.getRowColumnForCoordinates(
+              details.localPosition,
+            );
+
+            engine.clickedCoordinates(coords);
+          },
+
+          child: Stack(
+            children: [
+              ...verticalLines(),
+              ...horizontalLines(),
+              ...borderWidgets(),
+              ...revealedSquares(),
+              ...drawMines(),
+            ],
+          ),
         );
-
-        print(coords);
       },
-
-      child: Stack(
-        children: [
-          ...verticalLines(),
-          ...horizontalLines(),
-          ...borderWidgets(),
-          ...drawMines(),
-        ],
-      ),
     );
+  }
+
+  Iterable<Widget> revealedSquares() sync* {
+    for (final coords in engine.revealedLocations) {
+      final mineCount = engine.adjacentMineCounts[coords];
+      Color color = Colors.black;
+
+      switch (mineCount) {
+        case 0:
+          color = Colors.yellow[300]!;
+        case 1:
+          color = Colors.blue[300]!;
+        case 2:
+          color = Colors.green[300]!;
+        case 3:
+          color = Colors.red[300]!;
+        case 4:
+          color = Colors.purple[300]!;
+        case 5:
+          color = Colors.brown[300]!;
+        case 6:
+          color = Colors.blue[600]!;
+      }
+      if (mineCount == 0) {
+        yield widget.builder
+            .getFillSquarePosition(coords)
+            .toWidget(
+              ColoredBox(color: color),
+            );
+      } else {
+        yield widget.builder
+            .getCoordsContentsPosition(coords)
+            .toWidget(
+              Center(
+                child: Text(
+                  mineCount == 0 ? '' : '$mineCount',
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+      }
+    }
   }
 
   Iterable<Widget> drawMines() sync* {
