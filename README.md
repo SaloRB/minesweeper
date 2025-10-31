@@ -84,27 +84,31 @@ Prerequisites: Flutter SDK installed and on your PATH.
 
 ```bash
 # Get dependencies
-flutter pub get
+      <img src="screenshots/game-desktop-light.png" alt="Game — Desktop (Light)" width="600" />
 
 # Run on your preferred device (examples)
 flutter run -d chrome           # Web
-flutter run -d macos            # macOS desktop
+      <img src="screenshots/game-desktop-dark.png" alt="Game — Desktop (Dark)" width="600" />
 flutter run -d ios              # iOS simulator or device
 flutter run -d android          # Android emulator or device
 flutter run -d windows          # Windows desktop
 flutter run -d linux            # Linux desktop
 ```
 
+      <img src="screenshots/game-mobile-light.png" alt="Game — Mobile (Light)" width="260" />
+
 If you have multiple devices, run `flutter devices` to list them.
 
 ## Project structure
+
+      <img src="screenshots/game-mobile-dark.png" alt="Game — Mobile (Dark)" width="260" />
 
 The app separates core logic from UI and theming for clarity and reuse:
 
 - `lib/engine/minesweeper_engine.dart` — Core game rules and state: board generation, flood‑fill reveal, flags, chord action, first‑click safety, win/loss transitions.
 - `lib/models/coords.dart` — Simple coordinate model shared across layers.
 - `lib/ui/` — UI layer:
-  - `ui/screens/game_screen.dart` — Screen that owns the engine lifecycle, timer, difficulty, and composes the UI.
+  Note: If images don’t load, ensure the files exist under `screenshots/` with the names above. See `screenshots/README.md` for capture tips.
   - `ui/board/game_grid.dart` — Interactive grid surface (hover, gestures, rendering layers for numbers, flags, mines, overlays).
   - `ui/widgets/game_header.dart` — Difficulty selector (pre‑game) and flags/timer header (in‑game), theme toggle.
   - `ui/widgets/status_overlay.dart` — Themed Win/Loss overlay with reset.
