@@ -102,6 +102,18 @@ class _GameBoardInnerState extends State<_GameBoardInner> {
 
             engine.clickedCoordinates(coords);
           },
+          onLongPressStart: (details) {
+            final coords = widget.builder.getRowColumnForCoordinates(
+              details.localPosition,
+            );
+            engine.toggleFlag(coords);
+          },
+          onSecondaryTapUp: (details) {
+            final coords = widget.builder.getRowColumnForCoordinates(
+              details.localPosition,
+            );
+            engine.toggleFlag(coords);
+          },
 
           child: Stack(
             children: [
@@ -109,7 +121,8 @@ class _GameBoardInnerState extends State<_GameBoardInner> {
               ...horizontalLines(),
               ...borderWidgets(),
               ...revealedSquares(),
-              ...drawMines(),
+              ...flaggedSquares(),
+              if (engine.status == GameStatus.lost) ...drawMines(),
             ],
           ),
         );
@@ -119,6 +132,8 @@ class _GameBoardInnerState extends State<_GameBoardInner> {
 
   Iterable<Widget> revealedSquares() sync* {
     for (final coords in engine.revealedLocations) {
+      // Do not render mines in the revealed layer; they are handled by drawMines()
+      if (engine.mineLocations.contains(coords)) continue;
       final mineCount = engine.adjacentMineCounts[coords];
       Color color = Colors.black;
 
@@ -167,6 +182,15 @@ class _GameBoardInnerState extends State<_GameBoardInner> {
       yield widget.builder
           .getCoordsContentsPosition(coords)
           .toWidget(Center(child: Text('💣')));
+    }
+  }
+
+  Iterable<Widget> flaggedSquares() sync* {
+    for (final coords in engine.flaggedLocations) {
+      if (engine.revealedLocations.contains(coords)) continue;
+      yield widget.builder
+          .getCoordsContentsPosition(coords)
+          .toWidget(Center(child: Text('🚩')));
     }
   }
 

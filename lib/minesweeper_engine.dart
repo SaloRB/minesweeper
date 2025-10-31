@@ -13,6 +13,13 @@ enum Difficulty {
   hard,
 }
 
+/// Overall game status.
+enum GameStatus {
+  inProgress,
+  won,
+  lost,
+}
+
 /// Core game logic for a simple Minesweeper implementation.
 ///
 /// This engine is responsible for:
@@ -42,8 +49,15 @@ class MinesweeperEngine extends ChangeNotifier {
 
   /// Coordinates that have been revealed by the player.
   final revealedLocations = <Coords>{};
+
+  /// Coordinates that have been flagged by the player (suspected mines).
+  final flaggedLocations = <Coords>{};
+
   final mineLocations = <Coords>{};
   final adjacentMineCounts = <Coords, int>{};
+
+  /// Current status of the game.
+  GameStatus status = GameStatus.inProgress;
 
   /// Randomly populates [mineLocations] based on the chosen [difficulty] and
   /// precomputes [adjacentMineCounts] for all coordinates.
@@ -63,10 +77,113 @@ class MinesweeperEngine extends ChangeNotifier {
     }
   }
 
-  /// Marks the given [coords] as revealed and notifies listeners.
+  /// Handles a user click on [coords].
+  ///
+  /// - If [coords] is out of bounds, this is a no-op.
+  /// - If [coords] is a mine, this is a no-op (game-over handling not
+  ///   implemented here).
+  /// - If [coords] has one or more adjacent mines, only that square is
+  ///   revealed.
+  /// - If [coords] has zero adjacent mines, reveal all connected zero-adjacent
+  ///   squares and their numbered perimeter recursively (classic minesweeper
+  ///   flood fill).
   void clickedCoordinates(Coords coords) {
-    revealedLocations.add(coords);
+    if (status != GameStatus.inProgress) return;
+    if (!isInBounds(coords)) return;
+    if (flaggedLocations.contains(coords)) return; // don't reveal flagged cells
+    if (mineLocations.contains(coords)) {
+      _revealAllMinesAndLose();
+      notifyListeners();
+      return;
+    }
+
+    final count = adjacentMineCounts[coords] ?? 0;
+    if (count > 0) {
+      revealedLocations.add(coords);
+      _updateWinIfAny();
+      notifyListeners();
+      return;
+    }
+
+    _revealZeroRegion(coords);
+    _updateWinIfAny();
     notifyListeners();
+  }
+
+  /// Toggles a flag on [coords]. Flags cannot be placed on already-revealed
+  /// cells. No-op when the game is not in progress or when [coords] is
+  /// out-of-bounds.
+  void toggleFlag(Coords coords) {
+    if (status != GameStatus.inProgress) return;
+    if (!isInBounds(coords)) return;
+    if (revealedLocations.contains(coords)) return;
+
+    if (!flaggedLocations.add(coords)) {
+      // Was already present; remove instead (toggle off)
+      flaggedLocations.remove(coords);
+    }
+    notifyListeners();
+  }
+
+  /// Reveals all connected zero-adjacent cells starting from [start] and also
+  /// reveals their immediate non-mine neighbors (the numeric border).
+  void _revealZeroRegion(Coords start) {
+    final stack = <Coords>[];
+    if (!revealedLocations.contains(start)) {
+      revealedLocations.add(start);
+    }
+    stack.add(start);
+
+    while (stack.isNotEmpty) {
+      final current = stack.removeLast();
+
+      for (final n in neighborsOf(current)) {
+        if (mineLocations.contains(n)) continue;
+        if (flaggedLocations.contains(n)) continue; // don't auto-reveal flags
+        if (revealedLocations.contains(n)) continue;
+
+        // Always reveal non-mine neighbors of a zero cell.
+        revealedLocations.add(n);
+
+        // If neighbor is also a zero, continue expanding.
+        if ((adjacentMineCounts[n] ?? 0) == 0) {
+          stack.add(n);
+        }
+      }
+    }
+  }
+
+  /// Reveal all mines and mark the game as lost.
+  void _revealAllMinesAndLose() {
+    revealedLocations.addAll(mineLocations);
+    status = GameStatus.lost;
+  }
+
+  /// Checks for victory and updates [status] accordingly.
+  void _updateWinIfAny() {
+    if (status != GameStatus.inProgress) return;
+    final totalSafeSquares = rows * columns - mineLocations.length;
+    if (revealedLocations.length >= totalSafeSquares) {
+      status = GameStatus.won;
+    }
+  }
+
+  /// Returns true if [coords] lies within the board boundaries.
+  bool isInBounds(Coords coords) =>
+      coords.row >= 0 &&
+      coords.row < rows &&
+      coords.column >= 0 &&
+      coords.column < columns;
+
+  /// Returns all in-bounds neighbors around [coords] (8-neighborhood).
+  Iterable<Coords> neighborsOf(Coords coords) sync* {
+    for (final dr in rowAdjacencyIterator) {
+      for (final dc in columnAdjacencyIterator) {
+        if (dr == 0 && dc == 0) continue;
+        final n = Coords(row: coords.row + dr, column: coords.column + dc);
+        if (isInBounds(n)) yield n;
+      }
+    }
   }
 
   /// An iterator of every valid board coordinate in row-major order.
