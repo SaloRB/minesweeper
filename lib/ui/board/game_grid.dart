@@ -5,6 +5,7 @@ import 'package:minesweeper/engine/minesweeper_engine.dart';
 import 'package:minesweeper/models/coords.dart';
 import 'package:minesweeper/ui/widgets/status_overlay.dart';
 import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class GameGrid extends StatefulWidget {
   const GameGrid({super.key, required this.builder, required this.engine});
@@ -155,7 +156,16 @@ class _GameGridState extends State<GameGrid> {
     for (final coords in widget.engine.mineLocations) {
       yield widget.builder
           .getCoordsContentsPosition(coords)
-          .toWidget(const Center(child: Text('💣')));
+          .toWidget(
+            Center(
+              child: SvgPicture.asset(
+                'assets/icons/bomb.svg',
+                width: widget.builder.squareSize * 0.75,
+                height: widget.builder.squareSize * 0.75,
+                fit: BoxFit.contain,
+              ),
+            ),
+          );
     }
   }
 
@@ -164,7 +174,16 @@ class _GameGridState extends State<GameGrid> {
       if (widget.engine.revealedLocations.contains(coords)) continue;
       yield widget.builder
           .getCoordsContentsPosition(coords)
-          .toWidget(const Center(child: Text('🚩')));
+          .toWidget(
+            Center(
+              child: SvgPicture.asset(
+                'assets/icons/flag.svg',
+                width: widget.builder.squareSize * 0.72,
+                height: widget.builder.squareSize * 0.72,
+                fit: BoxFit.contain,
+              ),
+            ),
+          );
     }
   }
 

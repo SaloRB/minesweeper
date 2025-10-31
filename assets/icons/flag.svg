@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Flag pole -->
+  <rect x="58" y="28" width="14" height="200" rx="7" fill="#584f45"/>
+  <!-- Base -->
+  <rect x="36" y="220" width="58" height="12" rx="6" fill="#40392f"/>
+  <!-- Flag cloth -->
+  <path d="M72,36 C120,28 136,56 176,50 C204,46 210,70 210,70 C210,70 206,90 172,88 C130,86 122,66 72,74 Z" fill="#e23d3d"/>
+  <!-- Subtle highlight -->
+  <path d="M74,46 C118,38 136,60 176,54 C196,52 200,66 200,66 C200,66 198,74 174,74 C132,74 126,60 74,68 Z" fill="#ffffff" opacity="0.15"/>
+</svg>
