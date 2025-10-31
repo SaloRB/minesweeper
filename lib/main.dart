@@ -1,12 +1,16 @@
 import 'dart:math';
 import 'dart:async';
-import 'package:flutter/services.dart';
 
 import 'package:flutter/material.dart';
 import 'package:minesweeper/game_board_builder.dart';
+import 'web_context_menu/web_context_menu_stub.dart'
+    if (dart.library.html) 'web_context_menu/web_context_menu_html.dart'
+    as webcm;
 import 'package:minesweeper/minesweeper_engine.dart';
 
 void main() {
+  // Disable the browser's default context menu on web so right-click can flag.
+  webcm.disableContextMenu();
   runApp(const MainApp());
 }
 
@@ -22,8 +26,8 @@ class MainApp extends StatelessWidget {
           padding: EdgeInsets.all(30.0),
           child: Center(
             child: GameBoard(
-              rows: 5,
-              columns: 5,
+              rows: 9,
+              columns: 9,
             ),
           ),
         ),
@@ -43,25 +47,22 @@ class GameBoard extends StatefulWidget {
 }
 
 class _GameBoardState extends State<GameBoard> {
-  late final MinesweeperEngine engine;
+  MinesweeperEngine? engine;
   Timer? _timer;
   int _elapsedSeconds = 0;
   bool _timerStarted = false;
   late final VoidCallback _engineListener;
+  Difficulty _selectedDifficulty = Difficulty.easy;
 
   @override
   void initState() {
     super.initState();
-    engine = MinesweeperEngine(
-      rows: widget.rows,
-      columns: widget.columns,
-      difficulty: Difficulty.hard,
-    );
-
     _engineListener = () {
-      if (engine.status == GameStatus.inProgress) {
+      final e = engine;
+      if (e == null) return;
+      if (e.status == GameStatus.inProgress) {
         // Reset timer when a new game starts (no reveals yet)
-        if (engine.revealedLocations.isEmpty) {
+        if (e.revealedLocations.isEmpty) {
           _stopTimer();
           if (_elapsedSeconds != 0 || _timerStarted) {
             setState(() {
@@ -78,14 +79,31 @@ class _GameBoardState extends State<GameBoard> {
         _stopTimer();
       }
     };
-    engine.addListener(_engineListener);
   }
 
   @override
   void dispose() {
-    engine.removeListener(_engineListener);
+    engine?.removeListener(_engineListener);
     _timer?.cancel();
     super.dispose();
+  }
+
+  void _startGame() {
+    // Detach old engine if present
+    engine?.removeListener(_engineListener);
+    // Create a new engine with selected difficulty
+    final newEngine = MinesweeperEngine(
+      rows: widget.rows,
+      columns: widget.columns,
+      difficulty: _selectedDifficulty,
+    );
+    newEngine.addListener(_engineListener);
+    setState(() {
+      engine = newEngine;
+      // Reset timer display
+      _elapsedSeconds = 0;
+      _timerStarted = false;
+    });
   }
 
   void _startTimerIfNeeded() {
@@ -93,7 +111,8 @@ class _GameBoardState extends State<GameBoard> {
     _timerStarted = true;
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (engine.status != GameStatus.inProgress) {
+      final e = engine;
+      if (e == null || e.status != GameStatus.inProgress) {
         _stopTimer();
         return;
       }
@@ -137,59 +156,111 @@ class _GameBoardState extends State<GameBoard> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header above the grid: flags (left) and timer (right)
-              ListenableBuilder(
-                listenable: engine,
-                builder: (context, _) => Padding(
+              // Header: before start show difficulty selector; after start show flags/timer
+              if (engine == null)
+                Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        margin: EdgeInsets.only(left: 4),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[400]!),
-                        ),
-                        child: Text(
-                          '🚩 ${engine.remainingFlags} / ${engine.totalMines}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                      Row(
+                        children: [
+                          const Text('Difficulty: '),
+                          const SizedBox(width: 8),
+                          DropdownButton<Difficulty>(
+                            value: _selectedDifficulty,
+                            onChanged: (d) => setState(() {
+                              _selectedDifficulty = d ?? Difficulty.easy;
+                            }),
+                            items: const [
+                              DropdownMenuItem(
+                                value: Difficulty.easy,
+                                child: Text('Easy'),
+                              ),
+                              DropdownMenuItem(
+                                value: Difficulty.medium,
+                                child: Text('Medium'),
+                              ),
+                              DropdownMenuItem(
+                                value: Difficulty.hard,
+                                child: Text('Hard'),
+                              ),
+                            ],
                           ),
-                        ),
+                        ],
                       ),
-                      Container(
-                        margin: EdgeInsets.only(right: 4),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.grey[400]!),
-                        ),
-                        child: Text(
-                          '⏱ ${_formatTime(_elapsedSeconds)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
+                      ElevatedButton.icon(
+                        onPressed: _startGame,
+                        icon: const Icon(Icons.play_arrow),
+                        label: const Text('Start'),
                       ),
                     ],
                   ),
+                )
+              else
+                ListenableBuilder(
+                  listenable: engine!,
+                  builder: (context, _) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(left: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[400]!),
+                          ),
+                          child: Text(
+                            '🚩 ${engine!.remainingFlags} / ${engine!.totalMines}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(right: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[400]!),
+                          ),
+                          child: Text(
+                            '⏱ ${_formatTime(_elapsedSeconds)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
               SizedBox.fromSize(
                 size: builder.constraints,
-                child: _GameBoardInner(builder: builder, engine: engine),
+                child: engine == null
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(Icons.play_circle_outline, size: 40),
+                            SizedBox(height: 8),
+                            Text('Select a difficulty and press Start'),
+                          ],
+                        ),
+                      )
+                    : _GameBoardInner(builder: builder, engine: engine!),
               ),
             ],
           ),
