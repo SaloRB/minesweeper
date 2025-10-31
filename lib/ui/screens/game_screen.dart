@@ -6,6 +6,7 @@ import 'package:minesweeper/game_board_builder.dart';
 import 'package:minesweeper/minesweeper_engine.dart';
 import 'package:minesweeper/ui/board/game_grid.dart';
 import 'package:minesweeper/ui/widgets/game_header.dart';
+import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key, required this.rows, required this.columns});
@@ -24,6 +25,7 @@ class _GameScreenState extends State<GameScreen> {
   bool _timerStarted = false;
   late final VoidCallback _engineListener;
   Difficulty _selectedDifficulty = Difficulty.easy;
+  bool _isDarkTheme = false;
 
   @override
   void initState() {
@@ -98,6 +100,15 @@ class _GameScreenState extends State<GameScreen> {
     _timer = null;
   }
 
+  void _toggleTheme() {
+    setState(() {
+      _isDarkTheme = !_isDarkTheme;
+      MinesweeperTheme.setMode(
+        _isDarkTheme ? MinesweeperThemeMode.dark : MinesweeperThemeMode.light,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -129,6 +140,8 @@ class _GameScreenState extends State<GameScreen> {
                 }),
                 onStart: _startGame,
                 elapsedSeconds: _elapsedSeconds,
+                isDarkTheme: _isDarkTheme,
+                onToggleTheme: _toggleTheme,
               ),
               SizedBox.fromSize(
                 size: builder.constraints,

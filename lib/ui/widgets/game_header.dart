@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/minesweeper_engine.dart';
+import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
 
 class GameHeader extends StatelessWidget {
   const GameHeader({
@@ -9,6 +10,8 @@ class GameHeader extends StatelessWidget {
     required this.onDifficultyChanged,
     required this.onStart,
     required this.elapsedSeconds,
+    required this.isDarkTheme,
+    required this.onToggleTheme,
   });
 
   final MinesweeperEngine? engine;
@@ -16,6 +19,8 @@ class GameHeader extends StatelessWidget {
   final ValueChanged<Difficulty> onDifficultyChanged;
   final VoidCallback onStart;
   final int elapsedSeconds;
+  final bool isDarkTheme;
+  final VoidCallback onToggleTheme;
 
   String _formatTime(int totalSeconds) {
     final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
@@ -57,10 +62,21 @@ class GameHeader extends StatelessWidget {
                 ),
               ],
             ),
-            ElevatedButton.icon(
-              onPressed: onStart,
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Start'),
+            Row(
+              children: [
+                IconButton(
+                  tooltip: isDarkTheme ? 'Switch to light' : 'Switch to dark',
+                  onPressed: onToggleTheme,
+                  icon: Icon(
+                    isDarkTheme ? Icons.wb_sunny : Icons.nightlight_round,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: onStart,
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('Start'),
+                ),
+              ],
             ),
           ],
         ),
@@ -81,36 +97,49 @@ class GameHeader extends StatelessWidget {
                 vertical: 6,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: MinesweeperTheme.headerChipBackground,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[400]!),
+                border: Border.all(color: MinesweeperTheme.headerChipBorder),
               ),
               child: Text(
                 '🚩 ${engine!.remainingFlags} / ${engine!.totalMines}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: MinesweeperTheme.headerChipText,
                 ),
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(right: 4),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[400]!),
-              ),
-              child: Text(
-                '⏱ ${_formatTime(elapsedSeconds)}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+            Row(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(right: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: MinesweeperTheme.headerChipBackground,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: MinesweeperTheme.headerChipBorder,
+                    ),
+                  ),
+                  child: Text(
+                    '⏱ ${_formatTime(elapsedSeconds)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: MinesweeperTheme.headerChipText,
+                    ),
+                  ),
                 ),
-              ),
+                IconButton(
+                  tooltip: isDarkTheme ? 'Switch to light' : 'Switch to dark',
+                  onPressed: onToggleTheme,
+                  icon: Icon(
+                    isDarkTheme ? Icons.wb_sunny : Icons.nightlight_round,
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:minesweeper/game_board_builder.dart';
 import 'package:minesweeper/minesweeper_engine.dart';
 import 'package:minesweeper/ui/widgets/status_overlay.dart';
+import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
 
 class GameGrid extends StatefulWidget {
   const GameGrid({super.key, required this.builder, required this.engine});
@@ -98,8 +99,11 @@ class _GameGridState extends State<GameGrid> {
         .toWidget(
           Container(
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.04),
-              border: Border.all(color: Colors.black26, width: 1),
+              color: MinesweeperTheme.hoverOverlayFill,
+              border: Border.all(
+                color: MinesweeperTheme.hoverOverlayBorder,
+                width: 1,
+              ),
             ),
           ),
         );
@@ -119,30 +123,14 @@ class _GameGridState extends State<GameGrid> {
     for (final coords in widget.engine.revealedLocations) {
       // Do not render mines in the revealed layer; they are handled by _drawMines()
       if (widget.engine.mineLocations.contains(coords)) continue;
-      final mineCount = widget.engine.adjacentMineCounts[coords];
-      Color color = Colors.black;
 
-      switch (mineCount) {
-        case 0:
-          color = Colors.yellow[300]!;
-        case 1:
-          color = Colors.blue[300]!;
-        case 2:
-          color = Colors.green[300]!;
-        case 3:
-          color = Colors.red[300]!;
-        case 4:
-          color = Colors.purple[300]!;
-        case 5:
-          color = Colors.brown[300]!;
-        case 6:
-          color = Colors.blue[600]!;
-      }
-      if (mineCount == 0) {
+      final count = widget.engine.adjacentMineCounts[coords] ?? 0;
+
+      if (count == 0) {
         yield widget.builder
             .getFillSquarePosition(coords)
             .toWidget(
-              ColoredBox(color: color),
+              ColoredBox(color: MinesweeperTheme.zeroFillBackground),
             );
       } else {
         yield widget.builder
@@ -150,9 +138,9 @@ class _GameGridState extends State<GameGrid> {
             .toWidget(
               Center(
                 child: Text(
-                  mineCount == 0 ? '' : '$mineCount',
+                  '$count',
                   style: TextStyle(
-                    color: color,
+                    color: MinesweeperTheme.numberColor(count),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -185,7 +173,7 @@ class _GameGridState extends State<GameGrid> {
           .verticalLinePosition(i)
           .toWidget(
             Container(
-              color: Colors.grey[400],
+              color: MinesweeperTheme.verticalLineColor,
             ),
           );
     }
@@ -197,7 +185,7 @@ class _GameGridState extends State<GameGrid> {
           .horizontalLinePosition(i)
           .toWidget(
             Container(
-              color: Colors.grey,
+              color: MinesweeperTheme.horizontalLineColor,
             ),
           );
     }
@@ -208,28 +196,28 @@ class _GameGridState extends State<GameGrid> {
       // Left border
       widget.builder.leftBorderPosition().toWidget(
         Container(
-          color: Colors.grey[700],
+          color: MinesweeperTheme.borderColor,
         ),
       ),
 
       // Top border
       widget.builder.topBorderPosition().toWidget(
         Container(
-          color: Colors.grey[700],
+          color: MinesweeperTheme.borderColor,
         ),
       ),
 
       // Bottom border
       widget.builder.bottomBorderPosition().toWidget(
         Container(
-          color: Colors.grey[700],
+          color: MinesweeperTheme.borderColor,
         ),
       ),
 
       // Right border
       widget.builder.rightBorderPosition().toWidget(
         Container(
-          color: Colors.grey[700],
+          color: MinesweeperTheme.borderColor,
         ),
       ),
     ];

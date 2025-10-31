@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:minesweeper/minesweeper_engine.dart';
+import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
 
 class StatusOverlay extends StatelessWidget {
   const StatusOverlay({
@@ -18,12 +19,16 @@ class StatusOverlay extends StatelessWidget {
     }
 
     final bool isWin = status == GameStatus.won;
-    final Color borderColor = isWin ? Colors.green[600]! : Colors.red[600]!;
-    final Color textColor = isWin ? Colors.green[700]! : Colors.red[700]!;
+    final Color borderColor = isWin
+        ? MinesweeperTheme.statusWinBorder
+        : MinesweeperTheme.statusLoseBorder;
+    final Color textColor = isWin
+        ? MinesweeperTheme.statusWinText
+        : MinesweeperTheme.statusLoseText;
     final String title = isWin ? 'You Win!' : 'Game Over';
     final Color overlay = isWin
-        ? Colors.black.withValues(alpha: 0.10)
-        : Colors.black.withValues(alpha: 0.15);
+        ? MinesweeperTheme.statusOverlayScrimWin
+        : MinesweeperTheme.statusOverlayScrimLose;
 
     return Stack(
       key: ValueKey(isWin ? 'won' : 'lost'),
@@ -35,7 +40,7 @@ class StatusOverlay extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: MinesweeperTheme.statusCardBackground,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: borderColor, width: 2),
               boxShadow: const [
