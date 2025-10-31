@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:minesweeper/ui/layout/game_board_builder.dart';
 import 'package:minesweeper/engine/minesweeper_engine.dart';
 import 'package:minesweeper/models/coords.dart';
@@ -137,9 +138,11 @@ class _GameGridState extends State<GameGrid> {
               Center(
                 child: Text(
                   '$count',
-                  style: TextStyle(
+                  style: GoogleFonts.merriweather(
                     color: MinesweeperTheme.numberColor(count),
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
+                    fontSize: widget.builder.squareSize * 0.6,
+                    height: 1.0,
                   ),
                 ),
               ),
