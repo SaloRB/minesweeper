@@ -29,6 +29,7 @@ Clear the board by revealing all safe cells without triggering any mines. Built 
 
 ## Table of contents
 
+- Screenshots
 - How to play
 - Controls
 - Quick start
@@ -36,6 +37,31 @@ Clear the board by revealing all safe cells without triggering any mines. Built 
 - Development
 - Troubleshooting
 - License
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/game-desktop-light.png" alt="Game — Desktop (Light)" width="600" />
+      <div><sub>Desktop — Light theme</sub></div>
+    </td>
+    <td align="center">
+      <img src="screenshots/game-desktop-dark.png" alt="Game — Desktop (Dark)" width="600" />
+      <div><sub>Desktop — Dark theme</sub></div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="screenshots/game-mobile-light.png" alt="Game — Mobile (Light)" width="260" />
+      <div><sub>Mobile — Light theme</sub></div>
+    </td>
+    <td align="center">
+      <img src="screenshots/game-mobile-dark.png" alt="Game — Mobile (Dark)" width="260" />
+      <div><sub>Mobile — Dark theme</sub></div>
+    </td>
+  </tr>
+</table>
 
 ## How to play
 
