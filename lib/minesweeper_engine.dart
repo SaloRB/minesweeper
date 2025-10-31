@@ -59,6 +59,29 @@ class MinesweeperEngine extends ChangeNotifier {
   /// Current status of the game.
   GameStatus status = GameStatus.inProgress;
 
+  /// Total number of mines on the board.
+  int get totalMines => mineLocations.length;
+
+  /// Number of flags remaining (never negative).
+  int get remainingFlags {
+    final remaining = totalMines - flaggedLocations.length;
+    return remaining < 0 ? 0 : remaining;
+  }
+
+  /// Resets the game with the same board size and difficulty.
+  ///
+  /// Clears all revealed and flagged cells, re-seeds mines, recomputes
+  /// adjacency counts, and sets [status] back to [GameStatus.inProgress].
+  void reset() {
+    revealedLocations.clear();
+    flaggedLocations.clear();
+    mineLocations.clear();
+    adjacentMineCounts.clear();
+    status = GameStatus.inProgress;
+    _seedMines();
+    notifyListeners();
+  }
+
   /// Randomly populates [mineLocations] based on the chosen [difficulty] and
   /// precomputes [adjacentMineCounts] for all coordinates.
   void _seedMines() {
@@ -91,6 +114,10 @@ class MinesweeperEngine extends ChangeNotifier {
     if (status != GameStatus.inProgress) return;
     if (!isInBounds(coords)) return;
     if (flaggedLocations.contains(coords)) return; // don't reveal flagged cells
+    // Ensure the first click is never a mine by relocating it elsewhere.
+    if (revealedLocations.isEmpty && mineLocations.contains(coords)) {
+      _relocateMineFrom(coords);
+    }
     if (mineLocations.contains(coords)) {
       _revealAllMinesAndLose();
       notifyListeners();
@@ -150,6 +177,28 @@ class MinesweeperEngine extends ChangeNotifier {
           stack.add(n);
         }
       }
+    }
+  }
+
+  /// Move a mine away from [from] to a random safe square and recompute
+  /// adjacency counts. Used to guarantee the first click is never a mine.
+  void _relocateMineFrom(Coords from) {
+    final removed = mineLocations.remove(from);
+    if (!removed) return;
+    // Pick a new location that is not the clicked cell and not already a mine.
+    final candidates =
+        allCoords.where((c) => c != from && !mineLocations.contains(c)).toList()
+          ..shuffle();
+    if (candidates.isNotEmpty) {
+      mineLocations.add(candidates.first);
+    }
+    _recomputeAdjacency();
+  }
+
+  void _recomputeAdjacency() {
+    adjacentMineCounts.clear();
+    for (final coords in allCoords) {
+      adjacentMineCounts[coords] = getAdjacentMines(coords);
     }
   }
 
