@@ -19,6 +19,9 @@ class GameGrid extends StatefulWidget {
 
 class _GameGridState extends State<GameGrid> {
   Coords? _hovered;
+  // Icon scale relative to a tile's side length
+  static const double _bombScale = 0.75;
+  static const double _flagScale = 0.70;
 
   @override
   Widget build(BuildContext context) {
@@ -155,14 +158,27 @@ class _GameGridState extends State<GameGrid> {
   Iterable<Widget> _drawMines() sync* {
     for (final coords in widget.engine.mineLocations) {
       yield widget.builder
-          .getCoordsContentsPosition(coords)
+          .getFillSquarePosition(coords)
           .toWidget(
             Center(
               child: SvgPicture.asset(
                 'assets/icons/bomb.svg',
-                width: widget.builder.squareSize * 0.75,
-                height: widget.builder.squareSize * 0.75,
+                width: widget.builder.squareSize * _bombScale,
+                height: widget.builder.squareSize * _bombScale,
                 fit: BoxFit.contain,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white70
+                      : Colors.black87,
+                  BlendMode.srcIn,
+                ),
+                semanticsLabel: 'mine',
+                placeholderBuilder: (context) => Text(
+                  '💣',
+                  style: TextStyle(
+                    fontSize: widget.builder.squareSize * 0.7,
+                  ),
+                ),
               ),
             ),
           );
@@ -173,14 +189,21 @@ class _GameGridState extends State<GameGrid> {
     for (final coords in widget.engine.flaggedLocations) {
       if (widget.engine.revealedLocations.contains(coords)) continue;
       yield widget.builder
-          .getCoordsContentsPosition(coords)
+          .getFillSquarePosition(coords)
           .toWidget(
             Center(
               child: SvgPicture.asset(
                 'assets/icons/flag.svg',
-                width: widget.builder.squareSize * 0.72,
-                height: widget.builder.squareSize * 0.72,
+                width: widget.builder.squareSize * _flagScale,
+                height: widget.builder.squareSize * _flagScale,
                 fit: BoxFit.contain,
+                semanticsLabel: 'flag',
+                placeholderBuilder: (context) => Text(
+                  '🚩',
+                  style: TextStyle(
+                    fontSize: widget.builder.squareSize * 0.7,
+                  ),
+                ),
               ),
             ),
           );
