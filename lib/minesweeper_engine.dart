@@ -114,6 +114,17 @@ class MinesweeperEngine extends ChangeNotifier {
     if (status != GameStatus.inProgress) return;
     if (!isInBounds(coords)) return;
     if (flaggedLocations.contains(coords)) return; // don't reveal flagged cells
+
+    // Chord action: clicking an already-revealed numbered cell reveals
+    // all adjacent unflagged, unrevealed neighbors when the number of
+    // adjacent flags equals the cell's number.
+    if (revealedLocations.contains(coords)) {
+      final count = adjacentMineCounts[coords] ?? 0;
+      if (count > 0) {
+        _chordReveal(coords, requiredFlagCount: count);
+      }
+      return; // Either performed a chord reveal or no-op.
+    }
     // Ensure the first click is never a mine by relocating it elsewhere.
     if (revealedLocations.isEmpty && mineLocations.contains(coords)) {
       _relocateMineFrom(coords);
@@ -133,6 +144,47 @@ class MinesweeperEngine extends ChangeNotifier {
     }
 
     _revealZeroRegion(coords);
+    _updateWinIfAny();
+    notifyListeners();
+  }
+
+  /// Perform a "chord" reveal on a numbered, already-revealed square.
+  ///
+  /// If the number of adjacent flagged cells equals [requiredFlagCount],
+  /// reveal all adjacent cells that are not flagged and not already revealed.
+  /// If any revealed neighbor is a mine, the game is lost immediately.
+  void _chordReveal(Coords center, {required int requiredFlagCount}) {
+    // Count adjacent flags
+    final flaggedCount = neighborsOf(
+      center,
+    ).where((n) => flaggedLocations.contains(n)).length;
+
+    if (flaggedCount != requiredFlagCount) return; // Not satisfied: no-op
+
+    bool lost = false;
+    for (final n in neighborsOf(center)) {
+      if (flaggedLocations.contains(n)) continue;
+      if (revealedLocations.contains(n)) continue;
+
+      if (mineLocations.contains(n)) {
+        lost = true;
+        break;
+      }
+
+      final c = adjacentMineCounts[n] ?? 0;
+      if (c == 0) {
+        _revealZeroRegion(n);
+      } else {
+        revealedLocations.add(n);
+      }
+    }
+
+    if (lost) {
+      _revealAllMinesAndLose();
+      notifyListeners();
+      return;
+    }
+
     _updateWinIfAny();
     notifyListeners();
   }
