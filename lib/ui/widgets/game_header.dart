@@ -102,7 +102,7 @@ class GameHeader extends StatelessWidget {
                 border: Border.all(color: MinesweeperTheme.headerChipBorder),
               ),
               child: Text(
-                '🚩 ${engine!.remainingFlags} / ${engine!.totalMines}',
+                '🚩 ${engine!.remainingFlags}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: MinesweeperTheme.headerChipText,

@@ -100,10 +100,7 @@ class _GameGridState extends State<GameGrid> {
           Container(
             decoration: BoxDecoration(
               color: MinesweeperTheme.hoverOverlayFill,
-              border: Border.all(
-                color: MinesweeperTheme.hoverOverlayBorder,
-                width: 1,
-              ),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
         );

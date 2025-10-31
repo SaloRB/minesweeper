@@ -68,8 +68,8 @@ class MinesweeperTheme {
 
   /// Hover overlay styles
   static Color get hoverOverlayFill => switch (_mode) {
-    MinesweeperThemeMode.light => Colors.black.withValues(alpha: 0.04),
-    MinesweeperThemeMode.dark => Colors.white.withValues(alpha: 0.06),
+    MinesweeperThemeMode.light => Colors.black.withValues(alpha: 0.08),
+    MinesweeperThemeMode.dark => Colors.white.withValues(alpha: 0.12),
   };
   static Color get hoverOverlayBorder => switch (_mode) {
     MinesweeperThemeMode.light => Colors.black26,
