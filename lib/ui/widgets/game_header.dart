@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:minesweeper/minesweeper_engine.dart';
+import 'package:minesweeper/engine/minesweeper_engine.dart';
 import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
 
 class GameHeader extends StatelessWidget {

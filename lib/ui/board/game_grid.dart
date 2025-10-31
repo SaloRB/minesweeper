@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:minesweeper/game_board_builder.dart';
-import 'package:minesweeper/minesweeper_engine.dart';
+import 'package:minesweeper/ui/layout/game_board_builder.dart';
+import 'package:minesweeper/engine/minesweeper_engine.dart';
+import 'package:minesweeper/models/coords.dart';
 import 'package:minesweeper/ui/widgets/status_overlay.dart';
 import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
 

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:minesweeper/game_board_builder.dart';
-import 'package:minesweeper/minesweeper_engine.dart';
+import 'package:minesweeper/ui/layout/game_board_builder.dart';
+import 'package:minesweeper/engine/minesweeper_engine.dart';
 import 'package:minesweeper/ui/board/game_grid.dart';
 import 'package:minesweeper/ui/widgets/game_header.dart';
 import 'package:minesweeper/ui/theme/minesweeper_theme.dart';
